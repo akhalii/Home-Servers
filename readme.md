@@ -67,16 +67,3 @@ Detailed specs, network topologies, and service tables are split into host-speci
 | **PC / Workstation** | Veeam Agent (Image Backup) | Weekly Incremental | TrueNAS 8TB Pool (Mirror) | 
 | **TrueNAS Data** | ZFS Datasets & Snapshots | Automated Schedule | TrueNAS Pools | 
 | **Proxmox Workloads** | Proxmox Backup / VZDump | Scheduled | Secondary Storage | 
-
-## Repository Structure
-
-```
-.
-├── README.md              # Main entry point (this file)
-├── proxmox.md             # Proxmox VE hypervisor documentation
-├── truenas.md             # TrueNAS & storage architecture documentation
-├── homepage/              # Homepage config files (settings.yaml, services.yaml)
-├── docker/                # Dockge Docker Compose stacks (e.g. RustDesk)
-└── adguard/               # DNS rewrites & filter rules
-
-```
