@@ -6,9 +6,9 @@ Welcome to my personal home-server repository. This repository documents the arc
 
 The homelab consists of two primary bare-metal nodes running in a hyper-converged setup linked via a mesh VPN network:
 
-* [**Proxmox VE**](./proxmox.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, security SIEM/CVE triaging, and recursive DNS.
+* [**Proxmox VE**](./proxmox_ve_documentation.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, security SIEM/CVE triaging, and recursive DNS.
 
-* [**TrueNAS**](./truenas.md)**:** NAS and Docker host providing ZFS mirror storage pools, cloud sync, photo management, remote desktop servers, and client PC backup repositories.
+* [**TrueNAS**](./truenas_documentation.md)**:** NAS and Docker host providing ZFS mirror storage pools, cloud sync, photo management, remote desktop servers, and client PC backup repositories.
 
 ```
                          ┌─────────────────────────────────┐
@@ -40,10 +40,10 @@ The homelab consists of two primary bare-metal nodes running in a hyper-converge
 
 Detailed specs, network topologies, and service tables are split into host-specific guides:
 
-* [**Proxmox VE Documentation**](./proxmox.md)
+* [**Proxmox VE Documentation**](./proxmox_ve_documentation.md)
   *Covers hypervisor setup, LXC containers, application details, Wazuh SIEM / CVE triaging pipeline (agents on Desktop, Laptop, Proxmox, and TrueNAS), and local Unbound recursive DNS config.*
 
-* [**TrueNAS Documentation**](./truenas.md)
+* [**TrueNAS Documentation**](./truenas_documentation.md)
   *Covers ZFS storage pools (2TB & 8TB mirrors), Dockge/Docker Compose stacks, Nextcloud/Immich storage layout, and weekly Veeam PC backup configuration.*
 
 ## Network & Security Architecture
