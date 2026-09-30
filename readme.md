@@ -1,87 +1,82 @@
-# Personal Homelab Infrastructure
+# Home Server Infrastructure & Homelab
 
-A production-ready home infrastructure setup focused on self-hosting, network-wide ad-blocking, privacy, data storage, and media management.
+Welcome to my personal home-server repository. This repository documents the architecture, self-hosted services, storage pools, network routing, and deployment configurations across my homelab infrastructure.
 
-## Network & Infrastructure Architecture
+## Infrastructure Overview
 
-```
-                      [ Tailscale Mesh Network ]
-                                  │
-         ┌────────────────────────┴────────────────────────┐
-         ▼                                                 ▼
-┌─────────────────────────────────┐               ┌─────────────────────────────────┐
-│     Proxmox VE (Exit Node)      │               │       TrueNAS (Exit Node)       │
-├─────────────────────────────────┤               ├─────────────────────────────────┤
-│ • AdGuard Home 2 (Primary DNS)  │               │ • AdGuard Home 1 (Secondary DNS)│
-│ • Unbound DNS (Recursive)       │               │ • Dockge (Docker Composer)      │
-│ • Homepage                      │               │   └── RustDesk                  │
-│ • Actual Budget                 │               │ • Immich                        │
-│ • AMP Game Server               │               │ • Nextcloud                     │
-│ • FreshRSS                      │               └─────────────────────────────────┘
-│ • Wiki.js                       │
-│ • Beszel                        │
-│ • LubeLogger                    │
-└─────────────────────────────────┘
+The homelab consists of two primary bare-metal nodes running in a hyper-converged setup linked via a mesh VPN network:
+
+* [**Proxmox VE**](./proxmox.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, and recursive DNS.
+
+* [**TrueNAS**](./truenas.md)**:** NAS and Docker host providing ZFS mirror storage pools, cloud sync, photo management, remote desktop servers, and client PC backup repositories.
 
 ```
+                         ┌─────────────────────────────────┐
+                         │     Tailscale Mesh Network      │
+                         └────────────────┬────────────────┘
+                                          │
+                  ┌───────────────────────┴───────────────────────┐
+                  ▼                                               ▼
+┌───────────────────────────────────┐           ┌───────────────────────────────────┐
+│       Proxmox VE Node             │           │          TrueNAS Node             │
+│    (See proxmox.md for details)   │           │    (See truenas.md for details)   │
+├───────────────────────────────────┤           ├───────────────────────────────────┤
+│ • AdGuard Home 2 (Secondary DNS)  │           │ • AdGuard Home 1 (Primary DNS)    │
+│ • Unbound DNS (Recursive Resolver)│           │ • Dockge (Docker Stack Manager)   │
+│ • Homepage (Unified Dashboard)    │           │   └── RustDesk Server             │
+│ • Actual Budget                   │           │ • Immich (Photo & Video)          │
+│ • AMP Game Server                 │           │ • Nextcloud (Cloud Data/Files)    │
+│ • FreshRSS                        │           │ • ZFS Pool 1: 2TB Mirror (Apps)   │
+│ • Wiki.js                         │           │ • ZFS Pool 2: 8TB Mirror (Data)   │
+│ • Beszel Stats                    │           │ • Veeam Backup Target (SMB)       │
+│ • LubeLogger                      │           │                                   │
+└───────────────────────────────────┘           └───────────────────────────────────┘
 
-### DNS & Remote Access Flow
+```
 
-1. **Tailscale:** Deployed across all nodes, LXCs, and VMs for secure, mesh-encrypted remote access. Proxmox and TrueNAS both serve as network **Exit Nodes**.
+## Sub-System Documentation
 
-2. **Global DNS Routing:** Tailscale Tailnet DNS points directly to **AdGuard Home 1 & 2** for network-wide ad-blocking and local domain resolution.
+Detailed specs, network topologies, and service tables are split into host-specific guides:
 
-3. **Upstream Resolution:** Both AdGuard Home instances use **Unbound DNS** on Proxmox for recursive, privacy-focused DNS resolution directly against root servers.
+* [**Proxmox VE Documentation**](./proxmox.md)
 
-## Server Nodes & Hosted Services
+  *Covers hypervisor setup, LXC containers, application details, and local Unbound recursive DNS config.*
 
-### Proxmox VE
+* [**TrueNAS Documentation**](./truenas.md)
 
-Primary hypervisor managing VMs and LXC containers.
+  *Covers ZFS storage pools (2TB & 8TB mirrors), Dockge/Docker Compose stacks, Nextcloud/Immich storage layout, and weekly Veeam PC backup configuration.*
 
-| Service | Category | Description | Status / Dashboard Widget | 
+## Network & Security Architecture
+
+### 1. Remote Access & Mesh VPN
+
+* **Tailscale** is deployed across all machines, containers, and mobile devices.
+
+* Both **Proxmox VE** and **TrueNAS** act as **Exit Nodes** on the Tailnet for secure remote routing.
+
+### 2. Private, Network-Wide DNS Flow
+
+* **Tailscale DNS:** Points directly to **AdGuard Home 1** (TrueNAS) and **AdGuard Home 2** (Proxmox) for ad-blocking and local name resolution across all devices.
+
+* **Upstream Recursion:** Both AdGuard Home instances forward non-blocked queries to **Unbound DNS** running on Proxmox, which performs direct recursive lookups against global root servers for privacy.
+
+## Storage & Backup Strategy
+
+| Target | Mechanism | Frequency | Storage Pool | 
  | ----- | ----- | ----- | ----- | 
-| **Homepage** | Infrastructure | Unified dashboard organizing services & live metrics | Central Hub | 
-| **AdGuard Home 2** | Network & Security | Secondary DNS filter & local ad-blocking | Active | 
-| **Unbound DNS** | Network & Security | Recursive DNS resolver | Active | 
-| **Beszel** | Monitoring | Lightweight server stats and resource usage tracker | 2/2 Systems Up | 
-| **Wiki.js** | Docs & Media | Documentation and knowledge base management | Active | 
-| **FreshRSS** | Docs & Media | Self-hosted RSS feed aggregator | Active | 
-| **Actual Budget** | Misc | Local-first personal finance and budgeting | Active | 
-| **AMP Dashboard** | Misc | Management interface for game server instances | Active | 
-| **LubeLogger** | Misc | Self-hosted vehicle health, maintenance, and garage tracker | Active | 
+| **PC / Workstation** | Veeam Agent (Image Backup) | Weekly Incremental | TrueNAS 8TB Pool (Mirror) | 
+| **TrueNAS Data** | ZFS Datasets & Snapshots | Automated Schedule | TrueNAS Pools | 
+| **Proxmox Workloads** | Proxmox Backup / VZDump | Scheduled | Secondary Storage | 
 
-### TrueNAS
-
-Primary Network Attached Storage (NAS) node providing storage pools and hosting core application stacks.
-
-| Service | Category | Description | Status / Dashboard Widget | 
- | ----- | ----- | ----- | ----- | 
-| **AdGuard Home 1** | Network & Security | Primary DNS filter & local ad-blocking | Active | 
-| **Dockge** | Infrastructure | Reactive GUI for managing Docker Compose stacks | Active | 
-| **RustDesk** | Remote Access | Self-hosted remote desktop server (managed via Dockge) | Active | 
-| **Immich** | Docs & Media | High-performance self-hosted photo & video backup solution | Active | 
-| **Nextcloud** | Docs & Media | Cloud storage, file sharing, and productivity suite | Active | 
-
-## Top-Level Directory Layout
+## Repository Structure
 
 ```
 .
-├── homepage/              # Homepage config files (settings.yaml, services.yaml, widgets.yaml)
-├── docker/                # Compose files for stacks managed by Dockge
-│   └── rustdesk/          # RustDesk compose stack configuration
-├── adguard/               # AdGuard Home blocklists & DNS rewrite configuration specs
-├── unbound/               # Unbound DNS resolver configuration files
-└── docs/                  # Network diagrams, hardware specs, and maintenance guides
+├── README.md              # Main entry point (this file)
+├── proxmox.md             # Proxmox VE hypervisor documentation
+├── truenas.md             # TrueNAS & storage architecture documentation
+├── homepage/              # Homepage config files (settings.yaml, services.yaml)
+├── docker/                # Dockge Docker Compose stacks (e.g. RustDesk)
+└── adguard/               # DNS rewrites & filter rules
 
 ```
-
-## Maintenance & Operations
-
-* **Backups:** Critical data on TrueNAS backed up via ZFS snapshots.
-
-* **Service Management:**
-
-  * Proxmox LXCs managed via `pct` / Proxmox VE API.
-
-  * TrueNAS / Dockge stacks managed via Docker Compose.
