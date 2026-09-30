@@ -6,9 +6,9 @@ Welcome to my personal home-server repository. This repository documents the arc
 
 The homelab consists of two primary bare-metal nodes running in a hyper-converged setup linked via a mesh VPN network:
 
-* [**Proxmox VE**](./proxmox_ve_documentation.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, and recursive DNS.
+* [**Proxmox VE**](./proxmox.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, security SIEM/CVE triaging, and recursive DNS.
 
-* [**TrueNAS**](./truenas_documentation.md)**:** NAS and Docker host providing ZFS mirror storage pools, cloud sync, photo management, remote desktop servers, and client PC backup repositories.
+* [**TrueNAS**](./truenas.md)**:** NAS and Docker host providing ZFS mirror storage pools, cloud sync, photo management, remote desktop servers, and client PC backup repositories.
 
 ```
                          ┌─────────────────────────────────┐
@@ -23,12 +23,14 @@ The homelab consists of two primary bare-metal nodes running in a hyper-converge
 ├───────────────────────────────────┤           ├───────────────────────────────────┤
 │ • AdGuard Home 2 (Secondary DNS)  │           │ • AdGuard Home 1 (Primary DNS)    │
 │ • Unbound DNS (Recursive Resolver)│           │ • Dockge (Docker Stack Manager)   │
-│ • Homepage (Unified Dashboard)    │           │   └── RustDesk Server             │
-│ • Actual Budget                   │           │ • Immich (Photo & Video)          │
-│ • AMP Game Server                 │           │ • Nextcloud (Cloud Data/Files)    │
-│ • FreshRSS                        │           │ • ZFS Pool 1: 2TB Mirror (Apps)   │
-│ • Wiki.js                         │           │ • ZFS Pool 2: 8TB Mirror (Data)   │
-│ • Beszel Stats                    │           │ • Veeam Backup Target (SMB)       │
+│ • Wazuh SIEM & Dashboard          │           │   └── RustDesk Server             │
+│   (Manager & CVE Triage Hub)      │           │ • Immich (Photo & Video)          │
+│ • Homepage (Unified Dashboard)    │           │ • Nextcloud (Cloud Data/Files)    │
+│ • Actual Budget                   │           │ • ZFS Pool 1: 2TB Mirror (Apps)   │
+│ • AMP Game Server                 │           │ • ZFS Pool 2: 8TB Mirror (Data)   │
+│ • FreshRSS                        │           │ • Veeam Backup Target (SMB)       │
+│ • Wiki.js                         │           │                                   │
+│ • Beszel Stats                    │           │                                   │
 │ • LubeLogger                      │           │                                   │
 └───────────────────────────────────┘           └───────────────────────────────────┘
 
@@ -38,12 +40,10 @@ The homelab consists of two primary bare-metal nodes running in a hyper-converge
 
 Detailed specs, network topologies, and service tables are split into host-specific guides:
 
-* [**Proxmox VE Documentation**](./proxmox_ve_documentation.md)
+* [**Proxmox VE Documentation**](./proxmox.md)
+  *Covers hypervisor setup, LXC containers, application details, Wazuh SIEM / CVE triaging pipeline (agents on Desktop, Laptop, Proxmox, and TrueNAS), and local Unbound recursive DNS config.*
 
-  *Covers hypervisor setup, LXC containers, application details, and local Unbound recursive DNS config.*
-
-* [**TrueNAS Documentation**](./truenas_documentation.md)
-
+* [**TrueNAS Documentation**](./truenas.md)
   *Covers ZFS storage pools (2TB & 8TB mirrors), Dockge/Docker Compose stacks, Nextcloud/Immich storage layout, and weekly Veeam PC backup configuration.*
 
 ## Network & Security Architecture
@@ -59,6 +59,14 @@ Detailed specs, network topologies, and service tables are split into host-speci
 * **Tailscale DNS:** Points directly to **AdGuard Home 1** (TrueNAS) and **AdGuard Home 2** (Proxmox) for ad-blocking and local name resolution across all devices.
 
 * **Upstream Recursion:** Both AdGuard Home instances forward non-blocked queries to **Unbound DNS** running on Proxmox, which performs direct recursive lookups against global root servers for privacy.
+
+### 3. Security Monitoring & Threat Detection (Wazuh SIEM)
+
+* **Wazuh Manager & Dashboard:** Containerized on Proxmox VE.
+
+* **Agent Coverage:** Laptop, Desktop, Proxmox VE Host, and TrueNAS Host.
+
+* **Capabilities:** Centralized log collection, File Integrity Monitoring (FIM), active vulnerability scanning, and continuous CVE triaging across all infrastructure nodes and personal workstations.
 
 ## Storage & Backup Strategy
 
