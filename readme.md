@@ -6,7 +6,7 @@ Welcome to my personal home-server repository. This repository documents the arc
 
 The homelab consists of two primary bare-metal nodes running in a hyper-converged setup linked via a mesh VPN network:
 
-* [**Proxmox VE**](./proxmox.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, and recursive DNS.
+* [**Proxmox VE**](./proxmox_ve_documentation.md)**:** Hypervisor hosting LXCs/VMs for core utilities, management dashboards, media readers, and recursive DNS.
 
 * [**TrueNAS**](./truenas.md)**:** NAS and Docker host providing ZFS mirror storage pools, cloud sync, photo management, remote desktop servers, and client PC backup repositories.
 
